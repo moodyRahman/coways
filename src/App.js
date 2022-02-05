@@ -6,8 +6,11 @@ function Cell({ xcoor, ycoor, board, setBoard }) {
   const x = xcoor;
   const y = ycoor;
 
+  useEffect(() => {
+    setState(board[xcoor][ycoor])
+  }, [board])
+
   const handleClick = (e) => {
-    console.log(x, y);
     let curr = state === 0 ? 1 : 0;
     setState(curr);
 
@@ -30,18 +33,36 @@ function Cell({ xcoor, ycoor, board, setBoard }) {
 }
 
 function App() {
+  const size = 10;
   const [board, setBoard] = useState(
-    Array(6)
+    Array(10)
       .fill(0)
-      .map((x) => Array(6).fill(0))
+      .map((x) => Array(10).fill(0))
   );
-  
-  let next = Array(6)
+
+  let next = Array(size)
     .fill(0)
-    .map((x) => Array(6).fill(0));
+    .map((x) => Array(size).fill(0));
 
   const handleNext = () => {
-    console.log(getNeighborsAlive(1, 1));
+    board.forEach((row, xi) => {
+      row.forEach((col, yi) => {
+        let c = getNeighborsAlive(xi, yi)
+        if (col === 1 && (c === 3 || c === 2)){
+          next[xi][yi] = 1
+        } 
+        else if (col === 0 && (c === 3)){
+          next[xi][yi] = 1
+        }
+        else {
+          next[xi][yi] = 0;
+        }
+      })
+    })
+
+    setBoard(board.map((row, xi) =>
+        row.map((col, yi) => (next[xi][yi]) )
+    ))
   };
 
   const getCell = (x, y) => {
@@ -50,11 +71,6 @@ function App() {
     }
     return board[x][y];
   };
-
-
-  const sum = (previousValue, currentValue) => previousValue + currentValue
-  const arrsum = (previousValue, currentValue) => previousValue + (currentValue.reduce(sum));
-
 
   const getNeighborsAlive = (x, y) => {
     let neighbors =  [-1, 0, 1].map((dx) =>
@@ -68,7 +84,7 @@ function App() {
   return (
     <div
       className="App"
-      style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)" }}
+      style={{ display: "grid", gridTemplateColumns: `repeat(${size}, 1fr)` }}
     >
       {board.map((x, xi) => {
         return (
@@ -90,13 +106,15 @@ function App() {
       <br />
       <button
         onClick={(e) => {
-          console.log(board);
         }}
       >
         {" "}
         mmm{" "}
       </button>
       <button onClick={handleNext}> next </button>
+      <button onClick={(e) => {setBoard(board.map((row, xi) =>
+        row.map((col, yi) => (xi === 1 && yi === 1 ? (board[xi][yi] === 0 ? 1 : 0) : col))
+      )) }}> edit </button>
     </div>
   );
 }
